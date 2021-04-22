@@ -2,7 +2,7 @@
 <head>
     <style>
         canvas {
-          background-color: lightblue;
+          background-color: black;
           border: 1px solid black;
         }
     </style>
@@ -12,6 +12,24 @@
 </head>
 <body>
     <h1>Snake</h1>
+    <table>
+        <tr>
+          <td>Score:</td>
+          <td id="score"></td>
+        </tr>
+        <tr>
+          <td>Pellet:</td>
+          <td id="pellet"></td>
+        </tr>
+        <tr>
+          <td>Frames:</td>
+          <td id="frames"></td>
+        </tr>
+        <tr>
+          <td>Grid:</td>
+          <td id="grid"></td>
+        </tr>
+    </table>
     <canvas id="viewport" width="400" height="400">
       Sorry, your browser does not support the Canvas element. You're missing out.
     </canvas>

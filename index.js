@@ -10,12 +10,14 @@ function getRandomArray() {
 
 let being = {};
 let pellet = {};
+let blockers = {};
+let score = 0;
 let grid = {};
-let size = 10;
-let gridSize = 64;
+let size = 16;
+let gridSize = 32;
 var stop = false;
 var frameCount = 0;
-var fps = 30, fpsInterval, startTime, now, then, elapsed;
+var fps = 10, fpsInterval, startTime, now, then, elapsed;
 
 var canvas = document.querySelector("#viewport");
 var context = canvas.getContext("2d");
@@ -25,13 +27,15 @@ function check(e) {
 }
 
 function _initialize() {
-    console.log("1 - initializing...")
+    console.log("1 - initializing...");
+    stop = false;
     being.x = 0;
     being.y = 0;
     being.dx = 1;
     being.dy = 0;
-    pellet.x = Math.randomInt(gridSize);
-    pellet.y = Math.randomInt(gridSize);
+    pellet.x = Math.floor((Math.random() * gridSize));
+    pellet.y = Math.floor((Math.random() * gridSize));
+    console.log("Pellet located", pellet.x, pellet.y);
     canvas.width = size * gridSize;
     canvas.height = size * gridSize;
     context.clearRect(0,0,canvas.width, canvas.height);
@@ -40,7 +44,7 @@ function _initialize() {
 }
 
 function _handleKey(e) {
-    console.log("key pressed! ", e.keyCode);
+    //console.log("key pressed! ", e.keyCode);
     let k = e.keyCode;
     switch(k) {
         case 37:
@@ -73,13 +77,20 @@ function _handleKey(e) {
 function _logic() {
     being.x = being.x + being.dx;
     being.y = being.y + being.dy;
-    let collision = grid[hashCode(being.x,being.y)] != undefined || being.x < 0 || being.x > gridSize || being.y < 0 || being.y > gridSize;
+    let s_collision = grid[hashCode(being.x,being.y)] != undefined || being.x < 0 || being.x > gridSize || being.y < 0 || being.y > gridSize;
+    let b_collision = blockers.hasOwnProperty(hashCode(being.x,being.y));
+    let collision = s_collision || b_collision;
     if(collision) {
         stop = true;
-        alert("Game Over!");
-        _initialize();
+        score = 0;
+        _clearGrid();
+        _initialize(); 
     } else {
         grid[hashCode(being.x,being.y)] = 1;
+    }
+    let point = pellet.x == being.x && pellet.y == being.y;
+    if(point) {
+        _handlePellet();
     }
 }
 
@@ -98,22 +109,83 @@ function _animate() {
         elapsed = now - then;
         if(elapsed > fpsInterval) {
             then = now - (elapsed % fpsInterval);
+            frameCount++;
             _logic();
             _draw();
         }
-    }s
+    }
 }
 
 function _draw() {
-    context.fillStyle('black');
+    context.fillStyle = 'green';
     context.fillRect(being.x*size,being.y*size,size,size);
-    context.fillStyle('white');
+    context.strokeStyle = 'black';
+    context.rect(being.x*size,being.y*size,size,size);
+    context.stroke();
+    context.fillStyle = 'white';
     context.fillRect(pellet.x*size,pellet.y*size,size,size);
+    context.fillStyle = 'red';
+    document.getElementById("score").innerHTML = score;
+    document.getElementById("pellet").innerHTML = "(" + pellet.x + ", " + pellet.y + ")";
+    document.getElementById("grid").innerHTML = gridSize + "x" + gridSize;
+    document.getElementById("frames").innerHTML = frameCount;
+    for(const o in blockers) {
+        
+        let rx = getX(`${o}`);
+        let ry = getY(`${o}`);
+        console.log(`${o}`, rx, ry);
+        context.fillRect(rx*size, ry*size,size,size);
+    }
 }
 
 function hashCode(x, y) {
-    let hash = x + "@" + y;
+    let hash = x + '-' + y;
     return hash;
+}
+
+function getX(hash) {
+    let x = hash.substring(0,hash.indexOf('-'));
+    return x;
+}
+
+function getY(hash) {
+    let y = hash.substring(hash.indexOf('-')+1);
+    return y;
+}
+
+function _handlePellet() {
+    pellet.x = Math.floor((Math.random() * (gridSize-2))) + 1;
+    pellet.y = Math.floor((Math.random() * (gridSize-2))) + 1;
+    console.log("Pellet located", pellet.x, pellet.y);
+    score = score + 1;
+    _clearGrid();
+    let rx, ry;
+    //console.log("Adding blockers...", score);
+    for(let i = 0; i < score; i++) {
+        rx = Math.floor((Math.random() * gridSize));
+        ry = Math.floor((Math.random() * gridSize));
+        if(rx != being.x && ry != being.y) {
+            blockers[hashCode(rx, ry)] = 1;
+            for(let j = 0; j <= i / 5; j++) {
+                if(Math.abs(being.x - rx) > j && Math.abs(being.y - ry) > j) {
+                    blockers[hashCode(rx+j, ry)] = 1;
+                    blockers[hashCode(rx-j, ry)] = 1;
+                    blockers[hashCode(rx, ry+j)] = 1;
+                    blockers[hashCode(rx, ry-j)] = 1;
+                    blockers[hashCode(rx+Math.floor(j/2), ry+Math.floor(j/2))] = 1;
+                    blockers[hashCode(rx-Math.floor(j/2), ry+Math.floor(j/2))] = 1;
+                    blockers[hashCode(rx+Math.floor(j/2), ry-Math.floor(j/2))] = 1;
+                    blockers[hashCode(rx-Math.floor(j/2), ry-Math.floor(j/2))] = 1;
+                }
+            }
+        }
+    }
+}
+
+function _clearGrid() {
+    grid = {};
+    blockers = {};
+    context.clearRect(0,0,canvas.width, canvas.height);
 }
 
 _initialize();
