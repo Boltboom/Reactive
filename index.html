@@ -5,14 +5,25 @@
           background-color: black;
           border: 1px solid black;
         }
+        table td {
+          border: 1px #000000 solid;
+          padding: 0%;
+        }
+        td {
+          width:16px;
+          height:16px;
+        }
     </style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Snake</title>
 </head>
 <body>
-    <h1>Snake</h1>
-    <table>
+  <div id="Canvas">
+    <canvas id="viewport" width="0" height="0">
+      Sorry, your browser does not support the Canvas element. You're missing out.
+    </canvas>
+    <table style="visibility: hidden">
         <tr>
           <td>Score:</td>
           <td id="score"></td>
@@ -30,9 +41,7 @@
           <td id="grid"></td>
         </tr>
     </table>
-    <canvas id="viewport" width="400" height="400">
-      Sorry, your browser does not support the Canvas element. You're missing out.
-    </canvas>
+  </div>
     <script src="index.js"></script>
 </body>
 </html>
